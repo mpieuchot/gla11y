@@ -125,4 +125,11 @@ if __name__ == "__main__":
         except IOError:
             sys.exit("%s: non existing file: %s" % (sys.argv[0], filename))
 
-        check_a11y_relation(filename, tree.getroot())
+        try:
+            check_a11y_relation(filename, tree.getroot())
+        except KeyboardInterrupt:
+            pass
+        except Exception as error:
+            import traceback
+            traceback.print_exc()
+            sys.exit("%s: error parsing file: %s" % (sys.argv[0], filename))
