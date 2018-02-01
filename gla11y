@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2018 Martin Pieuchot <mpi@grenadille.net>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Take LibreOffice (glade) .ui files and check for non accessible widgets
+
+import sys
+import lxml.etree as ET
+
+widgets_ignored = []
+
+
+def check_a11y_relation(filename, root):
+    """
+    Emit an error message if any of the 'object' elements of the XML
+    document represented by `root' doesn't comply with Accessibility
+    rules.
+    """
+    for obj in root.iter('object'):
+        if obj.attrib['class'] in widgets_ignored:
+            continue
+
+        # Case 0: 'GtkLabel' elements
+        if obj.attrib['class'] == 'GtkLabel':
+            # either "label-for" points to an existing element...
+            rel = obj.find("accessibility/relation[@type='label-for']")
+            if rel is not None:
+                target = rel.attrib['target']
+                objects = root.iterfind(".//object[@id='%s']" % target)
+                if len(list(objects)) == 0:
+                    print("%s:%s ERROR: target '%s' not found" %
+                          (filename, rel.sourceline, target))
+                continue
+
+            # ...or "mnemonic_widget"
+            prop = obj.find("property[@name='mnemonic_widget']")
+            if prop is not None:
+                objects = root.iterfind(".//object[@id='%s']" % prop.text)
+                if len(list(objects)) == 0:
+                    print("%s:%s ERROR: mnemonic_widget '%s' not found" %
+                          (filename, prop.sourceline, prop.text))
+                continue
+            print("%s:%s WARNING: '%s' has no label-for nor mnemonic_widget" %
+                  (filename, obj.sourceline, obj.attrib['class']))
+            continue
+
+        # Case 1: has a <child internal-child="accessible"> sub-element
+        children = obj.findall("child[@internal-child='accessible']")
+        if children:
+            if len(children) > 1:
+                print("%s:%s ERROR: multiple accessible children" %
+                      (filename, obj.sourceline))
+            continue
+
+        # Case 2: has an <accessibility> sub-element with a "labelled-by"
+        # <relation> pointing to an existing element.
+        relations = obj.findall("accessibility/relation[@type='labelled-by']")
+        if len(relations) > 0:
+            for rel in relations:
+                target = rel.attrib['target']
+                targets = root.iterfind(".//object[@id='%s']" % target)
+                if len(list(targets)) == 0:
+                    print("%s:%s ERROR: target '%s' not found" %
+                          (filename, rel.sourceline, target))
+            continue
+
+        # Case 3/4: has an ID...
+        oid = obj.attrib.get('id')
+        if oid is not None:
+            # ...referenced by a single "label-for" <relation>
+            rels = root.iterfind(".//relation[@target='%s']" % oid)
+            relations = [r for r in rels if r.attrib['type'] == 'label-for']
+            if len(relations) == 1:
+                continue
+            if len(relations) > 1:
+                lines = ', '.join([str(r.sourceline) for r in relations])
+                print("%s:%s ERROR: '%s' has multiple relations: lines %s" %
+                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                continue
+
+            # ...referenced by a single "mnemonic_widget"
+            props = root.iterfind(".//property[@name='mnemonic_widget']")
+            props = [p for p in props if p.text == oid]
+            if len(props) == 1:
+                continue
+            if len(props) > 1:
+                lines = ', '.join([str(p.sourceline) for p in props])
+                print("%s:%s ERROR: '%s' has multiple mnemonic_widget:"
+                      " lines %s" %
+                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                continue
+
+        print("%s:%s WARNING: '%s' is missing some a11y love" %
+              (filename, obj.sourceline, obj.attrib['class']))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit("Usage: %s file ..." % sys.argv[0])
+
+    for filename in sys.argv[1:]:
+        try:
+            tree = ET.parse(filename)
+        except ET.ParseError:
+            sys.exit("%s: malformated xml file: %s" % (sys.argv[0], filename))
+        except IOError:
+            sys.exit("%s: non existing file: %s" % (sys.argv[0], filename))
+
+        check_a11y_relation(filename, tree.getroot())
