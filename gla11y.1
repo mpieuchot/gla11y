@@ -18,18 +18,35 @@
 .Os
 .Sh NAME
 .Nm gla11y
-.Nd checks for accessibility of glade widgets
+.Nd check accessibility of glade widgets
 .Sh SYNOPSIS
 .Nm
-.Ar file ...
+.Op Fl h
+.Op Fl i Ar widgets
+.Ar file
+.Op file ...
 .Sh DESCRIPTION
 The
 .Nm
-utility check if 
+utility check if
 .Ar file
 respect glade accessibility rules.
 It prints messages for every error it encounters.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl h
+Show help message and exit
+.It Fl i Ar widgets
+Do not check elements whose class is listed in
+.Ar widgets .
+.El
 .Sh EXIT STATUS
 .Ex -std gla11y
+.Sh EXAMPLES
+To check all the widgets but GtkLabel and AtkObject in file the sortdialog.ui:
+.Bd -literal -offset indent
+gla11y -i GtkLabel,AtkObject sortdialog.ui
+.Ed
 .Sh AUTHORS
 .An Martin Pieuchot Aq Mt mpi@grenadille.net
