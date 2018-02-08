@@ -13,7 +13,7 @@ TESTS =		000-multiple_a11y_children \
 all: $(TESTS)
 
 $(TESTS):
-	$(GLA11Y) $@.ui | diff -u /dev/stdin $@.ok
+	$(GLA11Y) $@.ui | diff -u $@.ok /dev/stdin
 
 .PHONY: all $(TESTS)
 
