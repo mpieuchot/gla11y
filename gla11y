@@ -99,11 +99,11 @@ def check_a11y_relation(filename, root):
         if oid is not None:
             # ...referenced by a single "label-for" <relation>
             rels = root.iterfind(".//relation[@target='%s']" % oid)
-            relations = [r for r in rels if r.attrib['type'] == 'label-for']
-            if len(relations) == 1:
+            labelfor = [r for r in rels if r.attrib.get('type') == 'label-for']
+            if len(labelfor) == 1:
                 continue
-            if len(relations) > 1:
-                lines = ', '.join([str(r.sourceline) for r in relations])
+            if len(labelfor) > 1:
+                lines = ', '.join([str(l.sourceline) for l in labelfor])
                 err(filename, obj, "'%s' has multiple relations: lines %s" %
                     (obj.attrib['class'], lines))
                 continue
