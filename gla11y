@@ -20,19 +20,39 @@ import sys
 import argparse
 import lxml.etree as ET
 
+pflag = False
 errors = 0
 widgets_ignored = []
 
 
+def errstr(elm):
+    """
+    Print the line number or the XML class path.
+    """
+    global pflag
+
+    if pflag:
+        path = elm.attrib['class']
+        elm = elm.getparent()
+        while elm is not None:
+            klass = elm.attrib.get('class')
+            if klass is not None:
+                path = klass + '/' + path
+            elm = elm.getparent()
+        return path
+    return str(elm.sourceline)
+
+
 def err(filename, elm, msg):
     global errors
+
     errors += 1
-    prefix = "%s:%s ERROR: " % (filename, elm.sourceline)
+    prefix = "%s:%s ERROR: " % (filename, errstr(elm))
     print(prefix + msg)
 
 
 def warn(filename, elm, msg):
-    prefix = "%s:%s WARNING: " % (filename, elm.sourceline)
+    prefix = "%s:%s WARNING: " % (filename, errstr(elm))
     print(prefix + msg)
 
 
@@ -125,6 +145,8 @@ def check_a11y_relation(filename, root):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', action='store_true',
+                        help="print path in messages")
     parser.add_argument('file', nargs='+', help="glade .ui file")
     parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
 
@@ -133,6 +155,7 @@ if __name__ == "__main__":
     if args.widgets is not None:
         widgets_ignored = args.widgets.split(',')
 
+    pflag = args.p
     for filename in args.file:
         try:
             tree = ET.parse(filename)
