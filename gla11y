@@ -36,9 +36,9 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] == 'GtkLabel':
             # Case 0: A 'GtkLabel' must contain one or more "label-for"
             # pointing to existing elements or...
-            relations = obj.findall("accessibility/relation[@type='label-for']")
-            if relations:
-                for rel in relations:
+            rels = obj.findall("accessibility/relation[@type='label-for']")
+            if len(rels) > 0:
+                for rel in rels:
                     target = rel.attrib['target']
                     objects = root.iterfind(".//object[@id='%s']" % target)
                     if len(list(objects)) == 0:
@@ -74,9 +74,9 @@ def check_a11y_relation(filename, root):
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
         # <relation> pointing to an existing element.
-        relations = obj.findall("accessibility/relation[@type='labelled-by']")
-        if len(relations) > 0:
-            for rel in relations:
+        rels = obj.findall("accessibility/relation[@type='labelled-by']")
+        if len(rels) > 0:
+            for rel in rels:
                 target = rel.attrib['target']
                 targets = root.iterfind(".//object[@id='%s']" % target)
                 if len(list(targets)) == 0:
