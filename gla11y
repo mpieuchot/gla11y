@@ -20,10 +20,13 @@ import sys
 import argparse
 import lxml.etree as ET
 
+errors = 0
 widgets_ignored = []
 
 
 def err(filename, elm, msg):
+    global errors
+    errors += 1
     prefix = "%s:%s ERROR: " % (filename, elm.sourceline)
     print(prefix + msg)
 
@@ -146,3 +149,6 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
             sys.exit("%s: error parsing file: %s" % (sys.argv[0], filename))
+
+        if errors > 0:
+            sys.exit(1)
