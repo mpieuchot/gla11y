@@ -97,8 +97,8 @@ def check_a11y_relation(filename, root):
                 prop = properties[0]
                 objects = root.iterfind(".//object[@id='%s']" % prop.text)
                 if len(list(objects)) == 0:
-                    err(filename, prop, "mnemonic_widget '%s' not found" %
-                        prop.text)
+                    err(filename, prop,
+                        "use of undeclared target '%s'" % prop.text)
                 continue
             warn(filename, obj, "'%s' has no label-for nor mnemonic_widget" %
                  obj.attrib['class'])
