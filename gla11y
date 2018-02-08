@@ -23,7 +23,7 @@ import lxml.etree as ET
 pflag = False
 Wflag = False
 errors = 0
-widgets_ignored = []
+widgets_ignored = ['GtkBox', 'GtkVBox']
 
 
 def errstr(elm):
@@ -154,14 +154,19 @@ if __name__ == "__main__":
     parser.add_argument('-p', action='store_true',
                         help="print path in messages")
     parser.add_argument('-W', action='store_true',
-                        help="Make all warnings into errors")
+                        help="make all warnings into errors")
     parser.add_argument('file', nargs='+', help="glade .ui file")
     parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
+    parser.add_argument('-I', action='store_true',
+                        help="do not ignore any widget")
 
     args = parser.parse_args()
 
     if args.widgets is not None:
-        widgets_ignored = args.widgets.split(',')
+        widgets_ignored.extend(args.widgets.split(','))
+
+    if args.I:
+        widgets_ignored = []
 
     pflag = args.p
     Wflag = args.W
