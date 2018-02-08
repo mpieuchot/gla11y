@@ -1,3 +1,3 @@
 000-multiple_a11y_children.ui:3 ERROR: multiple accessible children
-000-multiple_a11y_children.ui:5 WARNING: 'AtkObject' is missing some a11y love
-000-multiple_a11y_children.ui:9 WARNING: 'AtkObject' is missing some a11y love
+000-multiple_a11y_children.ui:5 WARNING: 'typelb1-atkobject' has no relation
+000-multiple_a11y_children.ui:9 WARNING: 'typelb1-atkobject' has no relation

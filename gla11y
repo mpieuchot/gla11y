@@ -145,8 +145,11 @@ def check_a11y_relation(filename, root):
                     " lines %s" % (obj.attrib['class'], lines))
                 continue
 
-        warn(filename, obj, "'%s' is missing some a11y love" %
-             obj.attrib['class'])
+            warn(filename, obj, "'%s' has no relation" % oid)
+            continue
+
+        klass = obj.attrib['class']
+        warn(filename, obj, "'%s' is missing some a11y love" % klass)
 
 
 if __name__ == "__main__":
