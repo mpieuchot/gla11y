@@ -23,6 +23,16 @@ import lxml.etree as ET
 widgets_ignored = []
 
 
+def err(filename, elm, msg):
+    prefix = "%s:%s ERROR: " % (filename, elm.sourceline)
+    print(prefix + msg)
+
+
+def warn(filename, elm, msg):
+    prefix = "%s:%s WARNING: " % (filename, elm.sourceline)
+    print(prefix + msg)
+
+
 def check_a11y_relation(filename, root):
     """
     Emit an error message if any of the 'object' elements of the XML
@@ -42,34 +52,32 @@ def check_a11y_relation(filename, root):
                     target = rel.attrib['target']
                     objects = root.iterfind(".//object[@id='%s']" % target)
                     if len(list(objects)) == 0:
-                        print("%s:%s ERROR: target '%s' not found" %
-                              (filename, rel.sourceline, target))
+                        err(filename, rel, "target '%s' not found" % target)
                 continue
 
             # ...a single "mnemonic_widget"
             properties = obj.findall("property[@name='mnemonic_widget']")
             if len(properties) > 1:
                 lines = ', '.join([str(p.sourceline) for p in properties])
-                print("%s:%s ERROR: too many mnemonic_widgets: lines %s" %
-                      (filename, obj.sourceline, lines))
+                err(filename, obj, "too many mnemonic_widgets: lines %s" %
+                    lines)
                 continue
             if len(properties) == 1:
                 prop = properties[0]
                 objects = root.iterfind(".//object[@id='%s']" % prop.text)
                 if len(list(objects)) == 0:
-                    print("%s:%s ERROR: mnemonic_widget '%s' not found" %
-                          (filename, prop.sourceline, prop.text))
+                    err(filename, prop, "mnemonic_widget '%s' not found" %
+                        prop.text)
                 continue
-            print("%s:%s WARNING: '%s' has no label-for nor mnemonic_widget" %
-                  (filename, obj.sourceline, obj.attrib['class']))
+            warn(filename, obj, "'%s' has no label-for nor mnemonic_widget" %
+                 obj.attrib['class'])
             continue
 
         # Case 1: has a <child internal-child="accessible"> sub-element
         children = obj.findall("child[@internal-child='accessible']")
         if children:
             if len(children) > 1:
-                print("%s:%s ERROR: multiple accessible children" %
-                      (filename, obj.sourceline))
+                err(filename, obj, "multiple accessible children")
             continue
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
@@ -80,8 +88,7 @@ def check_a11y_relation(filename, root):
                 target = rel.attrib['target']
                 targets = root.iterfind(".//object[@id='%s']" % target)
                 if len(list(targets)) == 0:
-                    print("%s:%s ERROR: target '%s' not found" %
-                          (filename, rel.sourceline, target))
+                    err(filename, rel, "target '%s' not found" % target)
             continue
 
         # Case 3/4: has an ID...
@@ -94,8 +101,8 @@ def check_a11y_relation(filename, root):
                 continue
             if len(relations) > 1:
                 lines = ', '.join([str(r.sourceline) for r in relations])
-                print("%s:%s ERROR: '%s' has multiple relations: lines %s" %
-                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                err(filename, obj, "'%s' has multiple relations: lines %s" %
+                    (obj.attrib['class'], lines))
                 continue
 
             # ...referenced by a single "mnemonic_widget"
@@ -105,13 +112,12 @@ def check_a11y_relation(filename, root):
                 continue
             if len(props) > 1:
                 lines = ', '.join([str(p.sourceline) for p in props])
-                print("%s:%s ERROR: '%s' has multiple mnemonic_widget:"
-                      " lines %s" %
-                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                err(filename, obj, "'%s' has multiple mnemonic_widget:"
+                    " lines %s" % (obj.attrib['class'], lines))
                 continue
 
-        print("%s:%s WARNING: '%s' is missing some a11y love" %
-              (filename, obj.sourceline, obj.attrib['class']))
+        warn(filename, obj, "'%s' is missing some a11y love" %
+             obj.attrib['class'])
 
 
 if __name__ == "__main__":
