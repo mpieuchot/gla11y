@@ -21,6 +21,7 @@ import argparse
 import lxml.etree as ET
 
 pflag = False
+Wflag = False
 errors = 0
 widgets_ignored = []
 
@@ -52,6 +53,11 @@ def err(filename, elm, msg):
 
 
 def warn(filename, elm, msg):
+    global Wflag, errors
+
+    if Wflag:
+        errors += 1
+
     prefix = "%s:%s WARNING: " % (filename, errstr(elm))
     print(prefix + msg)
 
@@ -147,6 +153,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', action='store_true',
                         help="print path in messages")
+    parser.add_argument('-W', action='store_true',
+                        help="Make all warnings into errors")
     parser.add_argument('file', nargs='+', help="glade .ui file")
     parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
 
@@ -156,6 +164,7 @@ if __name__ == "__main__":
         widgets_ignored = args.widgets.split(',')
 
     pflag = args.p
+    Wflag = args.W
     for filename in args.file:
         try:
             tree = ET.parse(filename)
