@@ -89,9 +89,9 @@ def check_a11y_relation(filename, root):
             properties = obj.findall("property[@name='mnemonic_widget']")
             if len(properties) > 1:
                 lines = ', '.join([str(p.sourceline) for p in properties])
-                err(filename, obj, "too many properties with identical names"
-                    ", expected single <property> with name 'mnemonic_widgets':"
-                    " lines %s" % lines)
+                err(filename, obj, "too many sub-elements"
+                    ", expected single <property name='mnemonic_widgets'>"
+                    ": lines %s" % lines)
                 continue
             if len(properties) == 1:
                 prop = properties[0]
@@ -108,7 +108,10 @@ def check_a11y_relation(filename, root):
         children = obj.findall("child[@internal-child='accessible']")
         if children:
             if len(children) > 1:
-                err(filename, obj, "multiple accessible children")
+                lines = ', '.join([str(c.sourceline) for c in children])
+                err(filename, obj, "too many sub-elements"
+                    ", expected single <child internal-child='accessible'>"
+                    ": lines %s" % lines)
             continue
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
@@ -133,8 +136,9 @@ def check_a11y_relation(filename, root):
                 continue
             if len(labelfor) > 1:
                 lines = ', '.join([str(l.sourceline) for l in labelfor])
-                err(filename, obj, "'%s' has multiple relations: lines %s" %
-                    (obj.attrib['class'], lines))
+                err(filename, obj, "too many elements"
+                    ", expected single <relation type='label-for' target='%s'>"
+                    ": lines %s" % (oid, lines))
                 continue
 
             # ...referenced by a single "mnemonic_widget"
@@ -146,6 +150,10 @@ def check_a11y_relation(filename, root):
                 lines = ', '.join([str(p.sourceline) for p in props])
                 err(filename, obj, "'%s' has multiple mnemonic_widget:"
                     " lines %s" % (obj.attrib['class'], lines))
+                err(filename, obj, "too many elements"
+                    ", expected single "
+                    "<property name='mnemonic_widgets'>%s</property>"
+                    ": lines %s" % (oid, lines))
                 continue
 
             warn(filename, obj, "'%s' has no relation" % oid)
