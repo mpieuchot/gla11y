@@ -1,1 +1,1 @@
-004-broken_label-for.ui:18 ERROR: target 'colsb2' not found
+004-broken_label-for.ui:18 ERROR: use of undeclared target 'colsb2'

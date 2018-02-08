@@ -1,1 +1,1 @@
-007-multiple_label-for.ui:12 ERROR: target 'colsb2' not found
+007-multiple_label-for.ui:12 ERROR: use of undeclared target 'colsb2'

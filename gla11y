@@ -79,9 +79,10 @@ def check_a11y_relation(filename, root):
             if len(rels) > 0:
                 for rel in rels:
                     target = rel.attrib['target']
-                    objects = root.iterfind(".//object[@id='%s']" % target)
-                    if len(list(objects)) == 0:
-                        err(filename, rel, "target '%s' not found" % target)
+                    targets = root.iterfind(".//object[@id='%s']" % target)
+                    if len(list(targets)) == 0:
+                        err(filename, rel,
+                            "use of undeclared target '%s'" % target)
                 continue
 
             # ...a single "mnemonic_widget"
@@ -117,7 +118,8 @@ def check_a11y_relation(filename, root):
                 target = rel.attrib['target']
                 targets = root.iterfind(".//object[@id='%s']" % target)
                 if len(list(targets)) == 0:
-                    err(filename, rel, "target '%s' not found" % target)
+                    err(filename, rel,
+                        "use of undeclared target '%s'" % target)
             continue
 
         # Case 3/4: has an ID...
