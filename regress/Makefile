@@ -5,7 +5,9 @@ TESTS =	000-multiple_a11y_children \
 	003-multiple_mnemonic_widget \
 	004-broken_label-for \
 	005-broken_mnemonic_widget \
-	006-empty_GtkLabel
+	006-empty_GtkLabel \
+	007-multiple_label-for \
+	008-more_than_one_mnemonic_widget
 
 all: $(TESTS)
 

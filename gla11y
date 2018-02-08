@@ -33,21 +33,28 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
-        # Case 0: 'GtkLabel' elements
         if obj.attrib['class'] == 'GtkLabel':
-            # either "label-for" points to an existing element...
-            rel = obj.find("accessibility/relation[@type='label-for']")
-            if rel is not None:
-                target = rel.attrib['target']
-                objects = root.iterfind(".//object[@id='%s']" % target)
-                if len(list(objects)) == 0:
-                    print("%s:%s ERROR: target '%s' not found" %
-                          (filename, rel.sourceline, target))
+            # Case 0: A 'GtkLabel' must contain one or more "label-for"
+            # pointing to existing elements or...
+            relations = obj.findall("accessibility/relation[@type='label-for']")
+            if relations:
+                for rel in relations:
+                    target = rel.attrib['target']
+                    objects = root.iterfind(".//object[@id='%s']" % target)
+                    if len(list(objects)) == 0:
+                        print("%s:%s ERROR: target '%s' not found" %
+                              (filename, rel.sourceline, target))
                 continue
 
-            # ...or "mnemonic_widget"
-            prop = obj.find("property[@name='mnemonic_widget']")
-            if prop is not None:
+            # ...a single "mnemonic_widget"
+            properties = obj.findall("property[@name='mnemonic_widget']")
+            if len(properties) > 1:
+                lines = ', '.join([str(p.sourceline) for p in properties])
+                print("%s:%s ERROR: too many mnemonic_widgets: lines %s" %
+                      (filename, obj.sourceline, lines))
+                continue
+            if len(properties) == 1:
+                prop = properties[0]
                 objects = root.iterfind(".//object[@id='%s']" % prop.text)
                 if len(list(objects)) == 0:
                     print("%s:%s ERROR: mnemonic_widget '%s' not found" %
