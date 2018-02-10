@@ -157,7 +157,7 @@ def check_a11y_relation(filename, root):
                     ": lines %s" % (oid, lines))
                 continue
 
-            warn(filename, obj, "element '%s' has no relation" % oid)
+            warn(filename, obj, "element '%s' '%s' has no relation" % (obj.attrib['class'], oid))
             continue
 
         klass = obj.attrib['class']
