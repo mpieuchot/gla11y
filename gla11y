@@ -43,9 +43,15 @@ def errstr(elm):
 
     if pflag:
         path = elm.attrib['class']
+        oid = elm.attrib.get('id')
+        if oid is not None:
+            path += "[@id='%s']" % oid
         elm = elm.getparent()
         while elm is not None:
             klass = elm.attrib.get('class')
+            oid = elm.attrib.get('id')
+            if oid is not None:
+                klass += "[@id='%s']" % oid
             if klass is not None:
                 path = klass + '/' + path
             elm = elm.getparent()
@@ -62,7 +68,8 @@ def err(filename, elm, msg):
         return
 
     errors += 1
-    print(prefix + " ERROR: " + msg, file=logfile)
+    msg = "%s ERROR: %s" % (prefix,  msg)
+    print(msg.encode('utf-8', 'ignore'), file=logfile)
 
 
 def warn(filename, elm, msg):
@@ -80,7 +87,9 @@ def warn(filename, elm, msg):
         errors += 1
     else:
         warnings += 1
-    print(prefix + " WARNING: " + msg, file=logfile)
+
+    msg = "%s WARNING: %s" % (prefix,  msg)
+    print(msg.encode('utf-8', 'ignore'), file=logfile)
 
 
 def check_a11y_relation(filename, root):
@@ -229,11 +238,12 @@ def main():
         widgets_ignored.extend(widgets)
 
     if lfile is not None:
-        import os
 
         if os.path.exists(lfile):
             log = open(lfile, 'r+')
-            logprefixes = [f.split(' ')[0] for f in log.readlines()]
+            for f in log.readlines():
+                prefix = f.split(' ')[0].decode('utf-8')
+                logprefixes.append(prefix)
             log.close()
 
         if append:
