@@ -87,6 +87,8 @@ def check_a11y_relation(filename, root):
     document represented by `root' doesn't comply with Accessibility
     rules.
     """
+    global widgets_ignored
+
     for obj in root.iter('object'):
         if obj.attrib['class'] in widgets_ignored:
             continue
@@ -183,7 +185,9 @@ def check_a11y_relation(filename, root):
         warn(filename, obj, "'%s' is missing some a11y love" % klass)
 
 
-if __name__ == "__main__":
+def main():
+    global pflag, Wflag, logfile, logprefixes, widgets_ignored
+
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='+', help="glade .ui file")
     parser.add_argument('-a', action='store_true', help="append to log file")
@@ -229,16 +233,13 @@ if __name__ == "__main__":
 
         try:
             check_a11y_relation(filename, tree.getroot())
-        except KeyboardInterrupt:
-            pass
         except Exception as error:
             import traceback
             traceback.print_exc()
             sys.exit("%s: error parsing file: %s" % (sys.argv[0], filename))
 
     if errors > 0 or errexists > 0:
-        estr = "%s error%s generated" % (errors,
-                                             's' if errors > 1 else '')
+        estr = "%s error%s generated" % (errors, 's' if errors > 1 else '')
         if errexists > 0:
             estr += " (%s suppressed)" % errexists
         print(estr)
@@ -252,3 +253,10 @@ if __name__ == "__main__":
 
     if errors > 0:
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
