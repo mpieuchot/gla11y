@@ -1,2 +1,2 @@
 009-multiple_a11y_children.ui:type_log_1 ERROR: too many sub-elements, expected single <child internal-child='accessible'>: lines 4, 8
-1 errors generated
+1 error generated
