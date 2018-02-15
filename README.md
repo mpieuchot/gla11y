@@ -78,9 +78,3 @@ generation of
 *error.log*:
 
 	gla11y -l error.log sortdialog.ui
-
-# AUTHORS
-
-Martin Pieuchot &lt;[mpi@grenadille.net](mailto:mpi@grenadille.net)&gt;
-
-OpenBSD 6.2 - February 1, 2018
