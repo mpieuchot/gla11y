@@ -23,6 +23,7 @@
 .Nm
 .Op Fl hp
 .Op Fl i Ar widgets
+.Op Fl l Ar log
 .Ar file
 .Op file ...
 .Sh DESCRIPTION
@@ -34,7 +35,7 @@ respect glade accessibility rules.
 It prints messages for every error it encounters.
 .Pp
 The options are as follows:
-.Bl -tag -width Ds
+.Bl -tag -width -i_widgets
 .It Fl h
 Show help message and exit.
 .It Fl i Ar widgets
@@ -43,6 +44,10 @@ Do not check elements whose class is listed in
 By default the following widgets are ignored: GtkBox, GtkVBox
 .It Fl I
 Do not ignore any widget.
+.It Fl l Ar log
+Append error messages to
+.Ar log
+file instead of printing them to stdout.
 .It Fl p
 Print class paths instead of line numbers in messages.
 .It Fl W
