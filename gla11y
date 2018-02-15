@@ -22,7 +22,10 @@ import sys
 import argparse
 import lxml.etree as ET
 
+# Log prefixes and file
+logprefixes = []
 logfile = sys.stdout
+
 pflag = False
 Wflag = False
 errors = 0
@@ -51,8 +54,10 @@ def err(filename, elm, msg):
     global errors
 
     errors += 1
-    prefix = "%s:%s ERROR: " % (filename, errstr(elm))
-    print(prefix + msg, file=logfile)
+
+    prefix = "%s:%s" % (filename, errstr(elm))
+    if prefix not in logprefixes:
+        print(prefix + " ERROR: " + msg, file=logfile)
 
 
 def warn(filename, elm, msg):
@@ -61,8 +66,9 @@ def warn(filename, elm, msg):
     if Wflag:
         errors += 1
 
-    prefix = "%s:%s WARNING: " % (filename, errstr(elm))
-    print(prefix + msg, file=logfile)
+    prefix = "%s:%s" % (filename, errstr(elm))
+    if prefix not in logprefixes:
+        print(prefix + " WARNING: " + msg, file=logfile)
 
 
 def check_a11y_relation(filename, root):
@@ -170,10 +176,11 @@ def check_a11y_relation(filename, root):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='+', help="glade .ui file")
+    parser.add_argument('-a', action='store_true', help="append to log file")
     parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
     parser.add_argument('-I', action='store_true',
                         help="do not ignore any widget")
-    parser.add_argument('-l', dest='logfile', help="log file")
+    parser.add_argument('-l', dest='logfile', help="supression log file")
     parser.add_argument('-p', action='store_true',
                         help="print path in messages")
     parser.add_argument('-W', action='store_true',
@@ -187,11 +194,21 @@ if __name__ == "__main__":
     if args.I:
         widgets_ignored = []
 
-    if args.logfile is not None:
-        logfile = open(args.logfile, 'a')
-
     pflag = args.p
     Wflag = args.W
+
+    if args.logfile is not None:
+        import os
+
+        if os.path.exists(args.logfile):
+            log = open(args.logfile, 'r+')
+            logprefixes = [f.split(' ')[0] for f in log.readlines()]
+            log.close()
+
+        if args.a:
+            logfile = open(args.logfile, 'a')
+        pflag = True
+
     for filename in args.file:
         try:
             tree = ET.parse(filename)
