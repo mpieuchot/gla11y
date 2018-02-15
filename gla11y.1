@@ -21,11 +21,10 @@
 .Nd check accessibility of glade widgets
 .Sh SYNOPSIS
 .Nm
-.Op Fl hp
+.Op Fl pW
 .Op Fl i Ar widgets
 .Op Fl l Ar log Op Fl a
-.Ar file
-.Op file ...
+.Op Ar file ...
 .Sh DESCRIPTION
 The
 .Nm
@@ -43,8 +42,6 @@ instead of printing them to stdout.
 This option has no effect unless
 .Fl l
 is specified.
-.It Fl h
-Show help message and exit.
 .It Fl i Ar widgets
 Do not check elements whose class is listed in
 .Ar widgets .

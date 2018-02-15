@@ -18,10 +18,12 @@
 
 from __future__ import print_function
 
+import os
 import sys
-import argparse
+import getopt
 import lxml.etree as ET
 
+progname = os.path.basename(sys.argv[0])
 logprefixes = []
 logfile = sys.stdout
 pflag = False
@@ -185,58 +187,76 @@ def check_a11y_relation(filename, root):
         warn(filename, obj, "'%s' is missing some a11y love" % klass)
 
 
+def usage():
+    print("%s [-pW] [-i widgets] [-l log [-a]] [file ...]" % progname,
+          file=sys.stderr)
+    sys.exit(2)
+
+
 def main():
     global pflag, Wflag, logfile, logprefixes, widgets_ignored
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', nargs='+', help="glade .ui file")
-    parser.add_argument('-a', action='store_true', help="append to log file")
-    parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
-    parser.add_argument('-I', action='store_true',
-                        help="do not ignore any widget")
-    parser.add_argument('-l', dest='logfile', help="supression log file")
-    parser.add_argument('-p', action='store_true',
-                        help="print path in messages")
-    parser.add_argument('-W', action='store_true',
-                        help="make all warnings into errors")
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ai:Il:pW")
+    except getopt.GetoptError:
+        usage()
 
-    args = parser.parse_args()
+    lfile = None
+    ignore = False
+    append = False
+    widgets = []
 
-    if args.widgets is not None:
-        widgets_ignored.extend(args.widgets.split(','))
+    for o, a in opts:
+        if o == "-a":
+            append = True
+        elif o == "-i":
+            widgets = a.split(',')
+        elif o == "-I":
+            ignore = True
+        elif o == "-l":
+            lfile = a
+        elif o == "-p":
+            pflag = True
+        elif o == "-W":
+            Wflag = True
 
-    if args.I:
+    if ignore and widgets:
+        usage()
+
+    if ignore:
         widgets_ignored = []
+    elif widgets:
+        widgets_ignored.extend(widgets)
 
-    pflag = args.p
-    Wflag = args.W
-
-    if args.logfile is not None:
+    if lfile is not None:
         import os
 
-        if os.path.exists(args.logfile):
-            log = open(args.logfile, 'r+')
+        if os.path.exists(lfile):
+            log = open(lfile, 'r+')
             logprefixes = [f.split(' ')[0] for f in log.readlines()]
             log.close()
 
-        if args.a:
-            logfile = open(args.logfile, 'a')
+        if append:
+            logfile = open(lfile, 'a')
         pflag = True
 
-    for filename in args.file:
+    if not args:
+        sys.exit("%s: no input files" % progname)
+
+    for filename in args:
         try:
             tree = ET.parse(filename)
         except ET.ParseError:
-            sys.exit("%s: malformatted xml file: %s" % (sys.argv[0], filename))
+            sys.exit("%s: malformatted xml file: %s" % (progname, filename))
         except IOError:
-            sys.exit("%s: non existing file: %s" % (sys.argv[0], filename))
+            sys.exit("%s: non existing file: %s" % (progname, filename))
 
         try:
             check_a11y_relation(filename, tree.getroot())
         except Exception as error:
             import traceback
             traceback.print_exc()
-            sys.exit("%s: error parsing file: %s" % (sys.argv[0], filename))
+            sys.exit("%s: error parsing file: %s" % (progname, filename))
 
     if errors > 0 or errexists > 0:
         estr = "%s error%s generated" % (errors, 's' if errors > 1 else '')
