@@ -40,10 +40,10 @@ def errstr(elm):
     global pflag
 
     if pflag:
-        path = elm.attrib['id']
+        path = elm.attrib['class']
         elm = elm.getparent()
         while elm is not None:
-            klass = elm.attrib.get('id')
+            klass = elm.attrib.get('class')
             if klass is not None:
                 path = klass + '/' + path
             elm = elm.getparent()
