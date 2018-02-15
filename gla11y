@@ -54,22 +54,17 @@ def errstr(elm):
 def err(filename, elm, msg):
     global errors, errexists
 
-    errors += 1
-
     prefix = "%s:%s" % (filename, errstr(elm))
     if prefix in logprefixes:
         errexists += 1
         return
+
+    errors += 1
     print(prefix + " ERROR: " + msg, file=logfile)
 
 
 def warn(filename, elm, msg):
     global Wflag, errors, errexists, warnings, warnexists
-
-    if Wflag:
-        errors += 1
-    else:
-        warnings += 1
 
     prefix = "%s:%s" % (filename, errstr(elm))
     if prefix in logprefixes:
@@ -78,6 +73,11 @@ def warn(filename, elm, msg):
         else:
             warnexists += 1
         return
+
+    if Wflag:
+        errors += 1
+    else:
+        warnings += 1
     print(prefix + " WARNING: " + msg, file=logfile)
 
 
@@ -236,18 +236,19 @@ if __name__ == "__main__":
             traceback.print_exc()
             sys.exit("%s: error parsing file: %s" % (sys.argv[0], filename))
 
-        if errors > 0:
-            estr = "%s error%s generated" % (errors, 's' if errors > 1 else '')
-            if errexists > 0:
-                estr += " (%s suppressed)" % errexists
-            print(estr)
+    if errors > 0 or errexists > 0:
+        estr = "%s error%s generated" % (errors,
+                                             's' if errors > 1 else '')
+        if errexists > 0:
+            estr += " (%s suppressed)" % errexists
+        print(estr)
 
-        if warnings > 0:
-            wstr = "%s warning%s generated" % (warnings,
-                                               's' if warnings > 1 else '')
-            if warnexists > 0:
-                wstr += " (%s suppressed)" % warnexists
-            print(wstr)
+    if warnings > 0 or warnexists > 0:
+        wstr = "%s warning%s generated" % (warnings,
+                                           's' if warnings > 1 else '')
+        if warnexists > 0:
+            wstr += " (%s suppressed)" % warnexists
+        print(wstr)
 
-        if errors > 0:
-            sys.exit(1)
+    if errors > 0:
+        sys.exit(1)
